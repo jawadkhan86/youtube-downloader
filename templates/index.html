@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YouTube Video Downloader</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8fafc;
+    }
+    .container {
+      max-width: 640px;
+      margin: 40px auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+      padding: 30px;
+    }
+    .progress {
+      height: 24px;
+    }
+    .video-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+    .thumb-preview {
+      width: 100%;
+      max-height: 300px;
+      object-fit: contain;
+      border-radius: 10px;
+      margin-top: 15px;
+    }
+    .footer {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      text-align: center;
+      margin-top: 30px;
+    }
+    .wait-animation::before {
+      content: "⏳ ";
+      animation: pulse 1s infinite;
+    }
+    @keyframes pulse {
+      0% { opacity: 0.2; }
+      50% { opacity: 1; }
+      100% { opacity: 0.2; }
+    }
+    .share-icons {
+      margin-top: 30px;
+      text-align: center;
+    }
+    .share-icons a {
+      margin: 0 8px;
+      display: inline-block;
+      font-size: 0.9rem;
+      color: #475569;
+      text-decoration: none;
+    }
+    .share-icons a i {
+      margin-right: 6px;
+    }
+    .share-icons span {
+      font-size: 0.8rem;
+      color: #64748b;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2 class="text-center mb-2">📥 YouTube Video Downloader</h2>
+    <p class="text-center text-muted mb-4" style="font-size: 0.9rem;">by <a href="https://smartmotionapp.com" target="_blank">SmartMotionApp</a></p>
+    <p class="text-muted mb-4 text-center">Paste your YouTube video URL, choose quality or MP3, and click Convert & Download.</p>
+
+    <form id="downloadForm">
+      <div class="mb-3">
+        <label for="url" class="form-label">YouTube Video URL</label>
+        <input type="text" class="form-control" id="url" name="url" required />
+      </div>
+      <div class="mb-3">
+        <label for="quality" class="form-label">Select Quality</label>
+        <select class="form-select" id="quality" name="quality">
+          <option value="high">High (1080p/720p)</option>
+          <option value="medium">Medium (480p)</option>
+          <option value="low">Low (360p)</option>
+        </select>
+      </div>
+      <div class="d-flex align-items-center mb-3">
+        <input class="form-check-input me-2" type="checkbox" id="audio" name="audio" />
+        <label class="form-check-label" for="audio">Download as MP3</label>
+      </div>
+      <button type="submit" class="btn btn-primary w-100">⚙️ Convert & Download</button>
+    </form>
+
+    <div id="waitMessage" class="text-center mt-3 text-muted wait-animation" style="display:none;">
+      Please wait while your download starts...
+    </div>
+
+    <div class="mt-4" id="progressArea" style="display:none;">
+      <div class="progress">
+        <div id="progressBar" class="progress-bar bg-danger" role="progressbar" style="width: 0%;">0%</div>
+      </div>
+      <p id="progressText" class="text-center text-muted mt-2"></p>
+      <p id="videoTitle" class="text-center video-title mt-2"></p>
+      <a id="thumbnailLink" target="_blank">
+        <img id="videoThumbnail" class="thumb-preview" src="" alt="Video Thumbnail" style="display:none;" />
+      </a>
+      <div class="text-center mt-3">
+        <a id="downloadLink" href="#" class="btn btn-success" style="display:none;">📂 Open Downloaded File</a>
+      </div>
+    </div>
+
+    <div class="share-icons">
+      <span>Share this tool:</span>
+      <div class="mt-2">
+        <a href="https://wa.me/?text=Check%20out%20this%20YouTube%20Downloader%20by%20SmartMotionApp:%20https://smartmotionapp.com" target="_blank">
+          <i class="fab fa-whatsapp"></i>WhatsApp
+        </a>
+        <a href="https://www.facebook.com/sharer/sharer.php?u=https://smartmotionapp.com" target="_blank">
+          <i class="fab fa-facebook"></i>Facebook
+        </a>
+        <a href="https://twitter.com/intent/tweet?text=Try%20this%20free%20YouTube%20Downloader%20by%20SmartMotionApp:%20https://smartmotionapp.com" target="_blank">
+          <i class="fab fa-twitter"></i>Twitter
+        </a>
+        <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://smartmotionapp.com&title=SmartMotionApp%20YouTube%20Downloader" target="_blank">
+          <i class="fab fa-linkedin"></i>LinkedIn
+        </a>
+        <a href="https://www.reddit.com/submit?url=https://smartmotionapp.com&title=SmartMotionApp%20YouTube%20Downloader" target="_blank">
+          <i class="fab fa-reddit"></i>Reddit
+        </a>
+        <a href="mailto:?subject=SmartMotionApp%20YouTube%20Downloader&body=Check%20out%20this%20tool:%20https://smartmotionapp.com" target="_blank">
+          <i class="fas fa-envelope"></i>Email
+        </a>
+      </div>
+    </div>
+
+    <div class="footer">© 2025 SmartMotionApp · All rights reserved</div>
+  </div>
+
+  <script>
+    document.getElementById("downloadForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const url = document.getElementById("url").value;
+      const quality = document.getElementById("quality").value;
+      const audio = document.getElementById("audio").checked;
+
+      document.getElementById("waitMessage").style.display = "block";
+      document.getElementById("progressArea").style.display = "none";
+
+      fetch("/download", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ url, quality, audio: audio ? "on" : "" })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === "started") {
+          const uid = data.id;
+          document.getElementById("progressArea").style.display = "block";
+
+          const interval = setInterval(() => {
+            fetch(`/progress/${uid}`)
+              .then(res => res.json())
+              .then(progress => {
+                if (progress.status === "downloading") {
+                  document.getElementById("waitMessage").style.display = "none";
+                  const percent = progress.progress;
+                  document.getElementById("progressBar").style.width = percent + "%";
+                  document.getElementById("progressBar").textContent = percent + "%";
+                  document.getElementById("progressText").textContent = `${progress.downloaded} of ${progress.total}`;
+                }
+
+                if (progress.status === "finished") {
+                  clearInterval(interval);
+                  document.getElementById("waitMessage").style.display = "none";
+                  document.getElementById("progressBar").style.width = "100%";
+                  document.getElementById("progressBar").textContent = "100%";
+                  document.getElementById("progressText").textContent = "Download complete.";
+
+                  if (progress.title) {
+                    document.getElementById("videoTitle").textContent = progress.title;
+                  }
+
+                  if (progress.thumbnail) {
+                    const thumbnail = document.getElementById("videoThumbnail");
+                    thumbnail.src = progress.thumbnail;
+                    thumbnail.style.display = "block";
+                    document.getElementById("thumbnailLink").href = `/download_file/${uid}`;
+                  }
+
+                  const downloadLink = document.getElementById("downloadLink");
+                  downloadLink.href = `/download_file/${uid}`;
+                  downloadLink.style.display = "inline-block";
+                }
+
+                if (progress.status === "error") {
+                  clearInterval(interval);
+                  document.getElementById("waitMessage").style.display = "none";
+                  document.getElementById("progressText").textContent = "❌ Error: " + progress.message;
+                }
+              });
+          }, 1000);
+        } else {
+          alert("Error: " + data.message);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
